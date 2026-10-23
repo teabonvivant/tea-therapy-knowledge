@@ -1,0 +1,13 @@
+---
+interface Props { sources: { text: string; url?: string; kind?: string }[]; reviewed?: Date }
+import { fmtDate } from '../lib/site';
+const { sources, reviewed } = Astro.props;
+import { srcLabel as label } from '../lib/srclabel';
+---
+{sources.length > 0 && (
+<section class="sources" aria-labelledby="src-h">
+  <h2 id="src-h">來源</h2>
+  <ol>{sources.map((s, i) => <li id={`src-${i + 1}`}><div>{s.kind && <span class="k">{s.kind}</span>}{s.text}{s.url && <> <a class="src-link" href={s.url} rel="noopener" target="_blank">{label(s.url)} ↗</a></>}</div></li>)}</ol>
+</section>
+)}
+<p class="review-note">內容整理：{fmtDate(reviewed) || '2026-10-23'}。本頁由編輯按公開文獻整理，尚待註冊中醫師及註冊營養師審閱；如發現錯漏，請告訴我們。</p>

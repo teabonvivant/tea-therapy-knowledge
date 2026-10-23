@@ -1,0 +1,37 @@
+---
+// 數字來源見咖啡因頁：沖泡茶每杯 14–61 毫克（Chin 2008）；港式奶茶平均約 170、台式約 130 毫克（食物安全中心 2013）；上限按 EFSA 2015。
+const drinks = [
+  { id: 'light', name: '沖泡茶・淡', note: '茶葉少、浸得短，估算約 15 毫克', mg: 15 },
+  { id: 'mid', name: '沖泡茶・一般', note: '估算約 35 毫克', mg: 35 },
+  { id: 'strong', name: '沖泡茶・濃', note: '茶葉多、浸得久，估算約 60 毫克', mg: 60 },
+  { id: 'hkmt', name: '港式奶茶', note: '本地化驗平均約 170 毫克', mg: 170 },
+  { id: 'twmt', name: '台式奶茶', note: '本地化驗平均約 130 毫克', mg: 130 },
+];
+---
+<section class="calc" data-calc-caf aria-labelledby="calc-h">
+  <div>
+    <h2 id="calc-h">今日飲了多少咖啡因？</h2>
+    <p class="muted">按你今天飲過的杯數加起來。數字是估算，實際份量視乎茶量、水溫和浸泡時間。</p>
+    <div class="calc-rows">
+      {drinks.map((d) => (
+        <div class="calc-row" data-mg={d.mg}>
+          <span><b>{d.name}</b><small>{d.note}</small></span>
+          <span class="step" role="group" aria-label={`${d.name}杯數`}><button type="button" data-d="-1" aria-label={`減一杯${d.name}`}>−</button><output aria-live="polite">0</output><button type="button" data-d="1" aria-label={`加一杯${d.name}`}>＋</button></span>
+        </div>
+      ))}
+      <div class="calc-row"><label for="calc-other"><b>其他飲品</b><small>咖啡、朱古力、汽水等，自行填毫克</small></label><input id="calc-other" class="calc-other" type="number" min="0" step="10" inputmode="numeric" value="0" style="width:96px;min-height:40px;border:1px solid var(--line);background:transparent;padding:0 10px;font:inherit" /></div>
+    </div>
+    <fieldset class="calc-who" style="border:0;padding:0">
+      <legend class="sr">飲用者</legend>
+      <label><input type="radio" name="who" value="adult" checked /> 一般成人</label>
+      <label><input type="radio" name="who" value="preg" /> 懷孕或哺乳</label>
+      <label><input type="radio" name="who" value="child" /> 兒童及青少年，體重 <input type="number" class="calc-kg" min="10" max="100" value="40" aria-label="體重（公斤）" /> 公斤</label>
+    </fieldset>
+  </div>
+  <div class="calc-out">
+    <p class="calc-total"><span data-total>0</span><small>毫克</small></p>
+    <div class="gauge" aria-hidden="true"><i></i><span class="lim"><span data-limlabel>400</span></span></div>
+    <p class="calc-msg" data-msg aria-live="polite"></p>
+    <p class="calc-note">上限按歐洲食物安全局 2015 年意見：健康成人每日 400 毫克、孕婦 200 毫克、兒童及青少年每公斤體重 3 毫克。這是一般參考，不是醫療建議；正在服藥或有心臟、睡眠問題的人，請先問醫生。</p>
+  </div>
+</section>

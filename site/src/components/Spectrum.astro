@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import { u } from '../lib/site';
+const ORDER = ['green', 'yellow', 'white', 'oolong', 'black', 'dark', 'puer'];
+const teas = (await getCollection('teas')).sort((a, b) => ORDER.indexOf(a.data.slug) - ORDER.indexOf(b.data.slug));
+const data = teas.map((t) => ({ title: t.data.title, nature: t.data.nature.split(/[（(]/)[0], short: t.data.nature.split(/[（(，,；;]/)[0], color: t.data.color, lede: t.data.lede, href: u(`/teas/${t.data.slug}/`) }));
+---
+{data.length > 0 && (
+<div class="spectrum spectrum-glow" data-spectrum>
+  <div>
+    <div class="band" aria-hidden="true"></div>
+    <div class="band-ends" aria-hidden="true"><span>寒涼</span><span>溫和</span></div>
+    <ul class="stops" aria-label="選擇茶類">
+      {data.map((t) => <li><button type="button" aria-pressed="false" style={`--c:${t.color}`}><span class="dot"></span><span class="nm">{t.title}</span><span class="na">{t.short}</span></button></li>)}
+    </ul>
+  </div>
+  <div class="cup-view" aria-live="polite">
+    <svg class="cup" viewBox="0 0 320 220" aria-hidden="true">
+      <ellipse cx="160" cy="196" rx="70" ry="10" fill="currentColor" opacity=".12" />
+      <path d="M40 40 Q46 168 120 188 L200 188 Q274 168 280 40 Z" fill="#f7f3ea" stroke="currentColor" stroke-width="1.2" />
+      <ellipse class="liquor" cx="160" cy="56" rx="112" ry="14" fill="#d6d68f" />
+      <ellipse cx="160" cy="40" rx="120" ry="16" fill="none" stroke="currentColor" stroke-width="1.2" />
+    </svg>
+    <h3 data-name></h3>
+    <span class="tag" data-tag></span>
+    <p data-text></p>
+    <a class="btn" data-go href="#"><span>讀這種茶</span> <span class="arr" aria-hidden="true">→</span></a>
+  </div>
+  <script type="application/json" id="tea-data" set:html={JSON.stringify(data)} />
+</div>
+)}

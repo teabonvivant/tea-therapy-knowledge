@@ -1,0 +1,206 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Meter from '../components/Meter.astro';
+import Spectrum from '../components/Spectrum.astro';
+import { u, LIQUOR, LEVEL_DESC, maxLevel } from '../lib/site';
+import classics from '../data/classics.json';
+import molEgcg from '../data/mol-egcg.svg?raw';
+import molCaf from '../data/mol-caffeine.svg?raw';
+import molThe from '../data/mol-theanine.svg?raw';
+const mols = [
+  { svg: molEgcg, n: 'EGCG', zh: '表沒食子兒茶素沒食子酸酯', f: 'C₂₂H₁₈O₁₁', p: '綠茶中含量最多的兒茶素，也是茶與健康研究最常量度的成分。', h: '/safety/extracts/', l: '提取物與一杯茶的分別' },
+  { svg: molCaf, n: '咖啡因', zh: 'Caffeine', f: 'C₈H₁₀N₄O₂', p: '提神的來源；份量隨茶量、水溫和浸泡時間改變。', h: '/safety/caffeine/', l: '一天飲多少才算多' },
+  { svg: molThe, n: 'L-茶胺酸', zh: 'L-Theanine', f: 'C₇H₁₄N₂O₃', p: '茶葉中主要的游離胺基酸，帶來鮮味，也是情緒與睡眠研究的焦點。', h: '/conditions/mood-sleep/', l: '情緒與睡眠' },
+];
+
+const conds = (await getCollection('conditions')).sort((a, b) => a.data.order - b.data.order);
+const remedies = (await getCollection('remedies')).sort((a, b) => a.data.order - b.data.order);
+const safety = (await getCollection('safety')).sort((a, b) => a.data.order - b.data.order);
+const teaCount = (await getCollection('teas')).length;
+const allSrc = new Set<string>();
+for (const c of ['conditions', 'teas', 'remedies', 'safety']) for (const e of await getCollection(c as any)) for (const x of (e.data as any).sources ?? []) allSrc.add(x.url ?? x.text);
+const sourceCount = allSrc.size;
+const timeline = (Array.isArray(classics) ? classics : (classics as any).items ?? []).filter((c: any) => c.quote && [659, 1211, 1578, 1765].includes(c.year)).filter((c: any, i: number, a: any[]) => a.findIndex((x: any) => x.year === c.year) === i);
+const jsonld = { '@context': 'https://schema.org', '@type': 'WebSite', name: '茶療知識庫', inLanguage: 'zh-Hant-HK', url: new URL(u('/'), Astro.site).href };
+---
+<Base title="茶療知識庫" description="以中醫茶療的角度讀茶與慢性病，並排放上流行病學、臨床試驗與營養學的解釋：血糖、血壓、血脂、心臟、認知、睡眠、骨質、腸胃等十六個專題，每個說法都標明證據強度與來源。" jsonld={jsonld}>
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <p class="kicker">中醫茶療 × 實證科學</p>
+        <h1><span class="line"><span>一盞茶，</span></span><span class="line"><span style="--d:1"><em>兩種</em>讀法。</span></span></h1>
+        <p class="hero-lede">中醫說茶的性味，問它寒還是溫、合不合你的體質；科學說茶的成分，問它多少份量、在多少人身上試過。本站把兩套說法並排放在桌上，讓你自己看清楚每一句話能證明到哪一步。</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href={u('/conditions/')}>由一個問題讀起 <span class="arr" aria-hidden="true">→</span></a>
+          <a class="btn" href={u('/teas/')}>看茶性光譜</a>
+        </div>
+        <div class="hero-stats" aria-label="本站內容">
+          <div><b>{conds.length}</b><span>慢病專題</span></div>
+          <div><b>{teaCount}</b><span>茶類</span></div>
+          <div><b>{remedies.length}</b><span>茶方</span></div>
+          <div><b>{sourceCount}</b><span>項來源</span></div>
+        </div>
+      </div>
+      <figure class="plate" id="hero-plate">
+        <img src={u('/img/hero-plate-l.webp')} srcset={`${u('/img/hero-plate-s.webp')} 640w, ${u('/img/hero-plate-l.webp')} 1024w`} sizes="(max-width: 860px) 90vw, 44vw" width="1024" height="1536" alt="茶樹開花枝條的本草圖：一芽兩葉、白色茶花及裂開的茶果" fetchpriority="high" />
+        <svg class="notes" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <path class="ln" style="--i:0" pathLength="1" d="M 320 112 L 742 112 L 756 124" />
+          <circle class="dot" style="--i:0" cx="758" cy="126" r="7" />
+          <path class="ln" style="--i:1" pathLength="1" d="M 320 336 L 450 336 L 528 372" />
+          <circle class="dot" style="--i:1" cx="532" cy="374" r="7" />
+          <path class="ln" style="--i:2" pathLength="1" d="M 64 612 L 64 650 L 200 724" />
+          <circle class="dot" style="--i:2" cx="204" cy="726" r="7" />
+        </svg>
+        <div class="lab sci" style="--x:3%;--y:7.3%;--i:0"><b>一芽兩葉</b><span>咖啡因、兒茶素最多的部位</span></div>
+        <div class="lab tcm" style="--x:3%;--y:21.9%;--i:1"><b>味甘苦，微寒</b><span>唐《新修本草》論「茗」</span></div>
+        <div class="lab sci" style="--x:3%;--y:36%;--i:2"><b>L-茶胺酸</b><span>茶湯鮮味的來源之一</span></div>
+        <figcaption>茶樹 <i>Camellia sinensis</i>（L.）Kuntze：同一片葉，兩種讀法。</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="duo" aria-label="兩種讀法">
+    <div class="wrap">
+      <div class="duo-col tcm rv">
+        <h2><small>中醫讀「性」</small>問寒溫，看體質</h2>
+        <p class="muted">同一株茶樹，殺青、萎凋、發酵、焙火、陳化之後，傳統上認為茶性由寒涼漸轉溫和。飲得舒不舒服，要看飲的人是怕冷還是怕熱、胃口好不好、睡得穩不穩。</p>
+        <dl><dt>看甚麼</dt><dd>茶性、體質、時令、飲後身體的反應</dd><dt>依據</dt><dd>本草典籍與歷代經驗</dd><dt>限制</dt><dd>多屬經驗總結，少有對照比較</dd></dl>
+      </div>
+      <div class="rule" aria-hidden="true"></div>
+      <div class="duo-col sci rv">
+        <h2><small>科學讀「量」</small>問成分，看人數</h2>
+        <p class="muted">一杯茶有多少咖啡因、多少兒茶素？研究用的是茶湯還是提取物，跟了多少人、多少年？效果有多大，會不會只是飲茶的人本身生活習慣較好？</p>
+        <dl><dt>看甚麼</dt><dd>成分、劑量、研究類型、效果大小</dd><dt>依據</dt><dd>世代研究、隨機對照試驗、薈萃分析</dd><dt>限制</dt><dd>多數試驗短、劑量高過日常飲茶</dd></dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="questions">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div><p class="kicker">慢病專題</p><h2>十六個常被問到的問題</h2></div>
+        <p>每一頁先給直答，再分開寫中醫怎樣看、研究怎樣說、營養學怎樣解釋，最後才講一天的茶可以怎樣安排。杯中茶色越深，代表證據越扎實。</p>
+      </div>
+      <ol class="qlist">
+        {conds.map((c, i) => (
+          <li class="rv" style={`--liq:${LIQUOR[c.data.group]}`}>
+            <a href={u(`/conditions/${c.data.slug}/`)}>
+              <span class="n">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{c.data.title}<small>{c.data.tcmName !== '—' ? c.data.tcmName.split(/[（(]/)[0] : c.data.group}</small></h3>
+              <p>{c.data.lede}</p>
+              <span class="go"><Meter level={maxLevel(c.data.evidence)} label={false} /><span class="arr" aria-hidden="true">→</span></span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section dark" id="spectrum">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div><p class="kicker">茶性光譜</p><h2>由寒到溫，<br />七種茶湯</h2></div>
+        <p>傳統以茶性分寒溫，大致跟着加工走：越少發酵、越新鮮，越偏寒涼；經過發酵、焙火、陳放，漸漸轉溫。點一下茶湯，看看每種茶的性情。</p>
+      </div>
+      <Spectrum />
+    </div>
+  </section>
+
+  <section class="section" id="molecules">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div><p class="kicker">杯裏的分子</p><h2>科學讀的，<br />是這三樣</h2></div>
+        <p>同一杯茶，唐代本草說它「味甘苦，微寒」，化學家看到的是數以百計的成分。研究談得最多的，是下面三種。</p>
+      </div>
+      <div class="mols">
+        {mols.map((m) => (
+          <figure class="mol rv">
+            <div class="mol-art" set:html={m.svg} aria-hidden="true" />
+            <figcaption>
+              <h3>{m.n}</h3>
+              <p class="mol-sub"><span>{m.zh}</span><span class="num">{m.f}</span></p>
+              <p>{m.p}</p>
+              <a href={u(m.h)}>{m.l} →</a>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="evidence" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div><p class="kicker">證據濃度</p><h2>四隻杯，<br />看一句話有多可信</h2></div>
+        <p>同一句「飲茶有益」，可能來自一個細胞實驗，也可能來自十多個隨機對照試驗。本站每個說法旁邊都放上四隻杯：茶色越深、杯越多，證據越扎實。</p>
+      </div>
+      <div class="legend rv">
+        {[4, 3, 2, 1].map((l) => (
+          <div><Meter level={l} label={false} /><h3>{({ 4: '強', 3: '中', 2: '弱', 1: '不足' } as any)[l]}</h3><p>{LEVEL_DESC[l]}</p></div>
+        ))}
+      </div>
+      <p class="rv" style="margin-top:28px"><a href={u('/method/')}>怎樣讀一篇茶與健康的研究 →</a></p>
+    </div>
+  </section>
+
+  {remedies.length > 0 && (
+    <section class="section" id="remedies" style="padding-top:0">
+      <div class="wrap">
+        <div class="section-head rv">
+          <div><p class="kicker">茶方</p><h2>茶底加一味</h2></div>
+          <p>代茶飲是中醫茶療最貼近日常的一環。這裏只收藥食同源的材料，每一方都寫明傳統用法、現代研究去到哪裏，以及哪些人不適合。</p>
+        </div>
+        <div class="cards cols-5">
+          {remedies.map((r) => (
+            <a class="card rv" href={u(`/remedies/${r.data.slug}/`)}>
+              <div class="ph"><img src={u(`/img/herb-${r.data.slug.split('-')[0]}-s.webp`)} width="640" height="640" loading="lazy" alt="" /></div>
+              <h3>{r.data.title}</h3>
+              <span class="tag">{r.data.base.split(/[（(]/)[0]} · <em>{r.data.nature.split(/[（(，]/)[0]}</em></span>
+              <p>{r.data.lede}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {timeline.length > 0 && (
+    <section class="section dark" id="classics">
+      <div class="wrap">
+        <div class="section-head rv">
+          <div><p class="kicker">茶療源流</p><h2>一千多年的<br />飲茶筆記</h2></div>
+          <p>由唐代本草到今日的大型世代研究，人們一直在問同一個問題：這杯茶，對身體有甚麼影響？</p>
+        </div>
+        <ol class="timeline">
+          {timeline.map((t: any) => (
+            <li class="rv"><span class="yr num">{t.year}<small>{t.era}</small></span><div><h3>{t.book}</h3><p class="by">{t.author}</p><blockquote>{t.quote}</blockquote><p>{t.plain}</p></div></li>
+          ))}
+        </ol>
+        <p class="rv"><a href={u('/classics/')}>看完整源流 →</a></p>
+      </div>
+    </section>
+  )}
+
+  <section class="section" id="safety">
+    <div class="wrap">
+      <div class="section-head rv">
+        <div><p class="kicker">飲茶之前</p><h2>先看這幾頁</h2></div>
+        <p>茶是溫和的飲品，但咖啡因、藥物相互作用、熱度和保健品，都有實在的界線。</p>
+      </div>
+      <div class="before-list rv">{safety.map((s, i) => <a href={u(`/safety/${s.data.slug}/`)}><span class="num">{String(i + 1).padStart(2, '0')}</span><h3>{s.data.title}</h3><p>{s.data.lede}</p></a>)}</div>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap">
+      <p class="kicker" style="justify-content:center">下一步</p>
+      <h2>讀懂身體，<br />也讀懂茶</h2>
+      <p>茶療講的是飲茶的人；想多了解茶本身的產地、製法與歷史，可以到姊妹網站慢慢讀。</p>
+      <div class="hero-actions">
+        <a class="btn btn-solid" href="https://teabonvivant.github.io/six-tea-knowledge/">六大茶知識庫 <span class="arr" aria-hidden="true">↗</span></a>
+        <a class="btn" href="https://teabonvivant.github.io/puer-tea-knowledge/">普洱茶知識庫 <span class="arr" aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
+</Base>

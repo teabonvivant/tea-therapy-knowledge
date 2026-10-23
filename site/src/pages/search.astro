@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import { u } from '../lib/site';
+---
+<Base title="搜尋" description="搜尋茶療知識庫：慢病專題、茶性、茶方與飲茶安全。" nav="/search/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span>搜尋</div>
+  <header class="page-head"><div class="wrap"><div><p class="kicker">搜尋</p><h1>想查哪一樣？</h1></div></div></header>
+  <section class="narrow" style="padding-bottom:140px">
+    <form class="search-box" data-search={u('/search-index.json')} role="search" onsubmit="return false">
+      <label class="sr" for="q">搜尋字詞</label>
+      <input id="q" type="search" placeholder="例如：血糖、咖啡因、熟普、陳皮" autocomplete="off" />
+    </form>
+    <p class="muted" data-status aria-live="polite" style="margin-top:14px;font-size:14px"></p>
+    <ul class="results"></ul>
+    <div class="filters" style="margin-top:28px">{['血糖', '血壓', '睡眠', '咖啡因', '藥物', '熟普', '菊花', '孕婦'].map((k) => <a class="chip" href={`?q=${k}`}>{k}</a>)}</div>
+  </section>
+</Base>

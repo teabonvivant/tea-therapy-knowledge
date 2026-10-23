@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Meter from '../../components/Meter.astro';
+import { u, GROUPS, LIQUOR, maxLevel } from '../../lib/site';
+const conds = (await getCollection('conditions')).sort((a, b) => a.data.order - b.data.order);
+const groups = GROUPS.filter((g) => conds.some((c) => c.data.group === g));
+---
+<Base title="慢病專題" description="茶與血糖、血壓、血脂、心臟、脂肪肝、尿酸、腎結石、認知、睡眠、骨質、口腔、腸胃、癌症研究、貧血：中醫怎樣看、研究怎樣說、營養學怎樣解釋。" nav="/conditions/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span>慢病專題</div>
+  <header class="page-head"><div class="wrap"><div>
+    <p class="kicker">慢病專題</p>
+    <h1>先問清楚，<br />再談飲甚麼茶</h1>
+    <p class="lede">每一題都用同一個次序寫：直答、中醫怎樣看、研究怎樣說、營養學的解釋、兩套說法在哪裏相遇、一天的茶、要小心的人。</p>
+  </div></div></header>
+  <section class="wrap" style="padding-bottom:120px">
+    <div class="filters" data-filter="group" role="group" aria-label="按身體系統篩選">
+      <button class="chip" type="button" data-value="全部" aria-pressed="true">全部</button>
+      {groups.map((g) => <button class="chip" type="button" data-value={g} aria-pressed="false">{g}</button>)}
+    </div>
+    <div class="ev-tools" data-filter="level" role="group" aria-label="按最強證據篩選"><span>最強證據</span>
+      <button class="chip" type="button" data-value="全部" aria-pressed="true">不限</button>
+      <button class="chip" type="button" data-value="3" aria-pressed="false"><Meter level={3} label={false} />&nbsp;中或以上</button>
+      <button class="chip" type="button" data-value="2" aria-pressed="false"><Meter level={2} label={false} />&nbsp;弱或以上</button>
+    </div>
+    <p class="muted" data-empty hidden>沒有符合條件的專題。</p>
+    <ol class="qlist">
+      {conds.map((c, i) => (
+        <li data-group={c.data.group} data-level={maxLevel(c.data.evidence)} style={`--liq:${LIQUOR[c.data.group]}`}>
+          <a href={u(`/conditions/${c.data.slug}/`)}>
+            <span class="n">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{c.data.title}<small>{c.data.group}</small></h3>
+            <p>{c.data.lede}</p>
+            <span class="go"><Meter level={maxLevel(c.data.evidence)} label={false} /><span class="arr" aria-hidden="true">→</span></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+</Base>

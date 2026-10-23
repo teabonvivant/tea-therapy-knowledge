@@ -1,0 +1,70 @@
+---
+import '../styles/global.css';
+import { u, NAV, FAMILY, SITE_NAME } from '../lib/site';
+interface Props { title: string; description: string; nav?: string; image?: string; noindex?: boolean; jsonld?: object }
+const { title, description, nav, image = '/img/og.jpg', noindex = true, jsonld } = Astro.props;
+const full = title === SITE_NAME ? `${SITE_NAME}｜中醫茶療與實證科學對讀` : `${title}｜${SITE_NAME}`;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const og = new URL(u(image), Astro.site).href;
+---
+<!doctype html>
+<html lang="zh-Hant-HK" class="no-js">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>{full}</title>
+<meta name="description" content={description} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+<link rel="canonical" href={canonical} />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={SITE_NAME} />
+<meta property="og:title" content={full} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={og} />
+<meta property="og:locale" content="zh_HK" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#1e4636" />
+<link rel="icon" href={u('/favicon.svg')} type="image/svg+xml" />
+<link rel="apple-touch-icon" href={u('/apple-touch-icon.png')} />
+<link rel="sitemap" href={u('/sitemap.xml')} />
+{jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
+<script is:inline>document.documentElement.classList.replace('no-js','js')</script>
+<slot name="head" />
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<div class="family"><div class="wrap"><span>茶療知識庫 · 唐老師茶網站系列</span><nav aria-label="姊妹網站">{FAMILY.map((f) => <a href={f.href}>{f.label}</a>)}</nav></div></div>
+<header class="site-head" id="top">
+  <div class="wrap">
+    <a class="brand" href={u('/')}>
+      <span class="brand-mark" aria-hidden="true">療</span>
+      <span><span class="brand-name wordmark">{SITE_NAME}</span><span class="brand-sub">本草 · 實證 · 日常</span></span>
+    </a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="開啟選單"><span></span><span></span></button>
+    <nav class="main-nav" id="main-nav" aria-label="主選單">
+      {NAV.map((n) => <a href={u(n.href)} aria-current={nav === n.href ? 'page' : undefined}>{n.label}</a>)}
+      <div class="menu-family"><p>姊妹網站</p>{FAMILY.map((f) => <a href={f.href}>{f.label}</a>)}</div>
+    </nav>
+  </div>
+</header>
+<main id="main"><slot /></main>
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <p class="foot-big serif">茶是日常的飲品，<br />不是藥。</p>
+        <p>本站把中醫茶療的傳統說法，與流行病學、臨床試驗及營養學研究並排閱讀，讓你知道每一種說法能證明到哪一步。</p>
+      </div>
+      <div><h2>閱讀</h2><ul><li><a href={u('/conditions/')}>慢病專題</a></li><li><a href={u('/teas/')}>茶性光譜</a></li><li><a href={u('/constitution/')}>九種體質</a></li><li><a href={u('/remedies/')}>茶方</a></li></ul></div>
+      <div><h2>查證</h2><ul><li><a href={u('/safety/')}>飲茶安全</a></li><li><a href={u('/method/')}>怎樣讀研究</a></li><li><a href={u('/classics/')}>茶療源流</a></li><li><a href={u('/sources/')}>全部來源</a></li></ul></div>
+      <div><h2>姊妹網站</h2><ul>{FAMILY.map((f) => <li><a href={f.href}>{f.label}</a></li>)}</ul></div>
+    </div>
+    <div class="disclaimer">
+      <p>本站內容只供一般知識參考，不構成醫療建議、診斷或治療，亦不能代替註冊西醫、註冊中醫師、藥劑師或營養師的意見。正在服藥、懷孕、哺乳或患有慢性病的人，改變飲食或飲茶習慣前請先諮詢醫護人員，切勿自行停藥。<a href={u('/about/')}>關於本站與審閱狀態</a></p>
+      <p>© 2026 茶療知識庫</p>
+    </div>
+  </div>
+</footer>
+<script src={u('/site.js')} defer></script>
+</body>
+</html>

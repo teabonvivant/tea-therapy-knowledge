@@ -1,0 +1,7 @@
+---
+import Base from '../layouts/Base.astro';
+import { u } from '../lib/site';
+---
+<Base title="找不到頁面" description="找不到這一頁。">
+  <header class="page-head"><div class="wrap"><div><p class="kicker">404</p><h1>這一頁，<br />像茶渣倒掉了</h1><p class="lede">網址可能已更改。可以回到<a href={u('/')}>首頁</a>，或<a href={u('/search/')}>搜尋</a>。</p></div></div></header>
+</Base>

@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { u } from '../lib/site';
+import { srcLabel } from '../lib/srclabel';
+const cols = [['conditions', '慢病專題'], ['teas', '茶性'], ['remedies', '茶方'], ['safety', '安全']] as const;
+const map = new Map<string, { text: string; url?: string; kind?: string; pages: { t: string; h: string }[] }>();
+for (const [c, label] of cols) {
+  for (const e of await getCollection(c as any)) {
+    for (const s of (e.data as any).sources ?? []) {
+      const k = s.url ?? s.text;
+      if (!map.has(k)) map.set(k, { ...s, pages: [] });
+      map.get(k)!.pages.push({ t: `${label}・${(e.data as any).title}`, h: u(`/${c}/${(e.data as any).slug}/`) });
+    }
+  }
+}
+const all = [...map.values()].sort((a, b) => a.text.localeCompare(b.text));
+const kinds = [...new Set(all.map((s) => s.kind).filter(Boolean))];
+---
+<Base title="全部來源" description="本站引用的全部研究、官方指引及古籍，附引用頁面。" nav="/sources/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span>全部來源</div>
+  <header class="page-head"><div class="wrap"><div>
+    <p class="kicker">來源</p>
+    <h1>{all.length} 項來源</h1>
+    <p class="lede">按作者或書名排序。每項後面列出引用它的頁面。</p>
+  </div></div></header>
+  <section class="wrap" style="padding-bottom:120px">
+    <div class="filters" data-filter role="group" aria-label="按來源類型篩選"><button class="chip" type="button" data-value="全部" aria-pressed="true">全部</button>{kinds.map((k) => <button class="chip" type="button" data-value={k} aria-pressed="false">{k}</button>)}</div>
+    <div class="sources" style="margin-top:0;border-top:0"><ol>{all.map((s) => <li data-group={s.kind ?? ''}><div>{s.kind && <span class="k">{s.kind}</span>}{s.text}{s.url && <> <a class="src-link" href={s.url} rel="noopener" target="_blank">{srcLabel(s.url)} ↗</a></>}<br /><small class="muted" style="font-size:13px">見：{s.pages.map((p, i) => <>{i > 0 && '、'}<a href={p.h}>{p.t}</a></>)}</small></div></li>)}</ol></div>
+  </section>
+</Base>

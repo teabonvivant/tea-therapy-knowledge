@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { u } from '../../lib/site';
+const all = (await getCollection('safety')).sort((a, b) => a.data.order - b.data.order);
+---
+<Base title="飲茶安全" description="咖啡因每日上限、茶與藥物的相互作用、熱茶溫度、孕期與兒童、茶提取物保健品、農藥重金屬與氟：飲茶之前要知道的界線。" nav="/safety/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span>飲茶安全</div>
+  <header class="page-head"><div class="wrap"><div>
+    <p class="kicker">飲茶安全</p>
+    <h1>溫和的飲品，<br />也有界線</h1>
+    <p class="lede">一天幾杯清茶，對大部分成年人都在安全範圍內。要留神的，是咖啡因的總量、正在服用的藥、茶的溫度，以及濃縮成膠囊的提取物。</p>
+  </div></div></header>
+  <section class="wrap" style="padding-bottom:120px">
+    <ol class="qlist">
+      {all.map((s, i) => (
+        <li><a href={u(`/safety/${s.data.slug}/`)}><span class="n">{String(i + 1).padStart(2, '0')}</span><h3>{s.data.title}</h3><p>{s.data.lede}</p><span class="go"><span class="arr" aria-hidden="true">→</span></span></a></li>
+      ))}
+    </ol>
+  </section>
+</Base>

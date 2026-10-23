@@ -1,0 +1,51 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Sources from '../../components/Sources.astro';
+import MobileToc from '../../components/MobileToc.astro';
+import CaffeineCalc from '../../components/CaffeineCalc.astro';
+import { u } from '../../lib/site';
+export async function getStaticPaths() {
+  const all = (await getCollection('safety')).sort((a, b) => a.data.order - b.data.order);
+  return all.map((entry, i) => ({ params: { slug: entry.data.slug }, props: { entry, prev: all[i - 1], next: all[i + 1] ?? all[0] } }));
+}
+const { entry, prev, next } = Astro.props;
+const d = entry.data;
+const { Content, headings } = await render(entry);
+const h2 = headings.filter((h) => h.depth === 2);
+const KEY: Record<string, [string, string, string]> = {
+  caffeine: ['400', '毫克／日', '歐洲食物安全局認為健康成人每日咖啡因總量在此以內，未見安全疑慮'],
+  'hot-tea': ['65', '°C', '國際癌症研究機構把 65°C 以上的極熱飲品列為 2A 類'],
+  'pregnancy-children': ['200', '毫克／日', '孕婦每日咖啡因的參考上限，所有飲品一併計算'],
+  extracts: ['800', '毫克／日', '補充劑 EGCG 達此份量，試驗見肝酵素上升'],
+  medicines: ['先問', '', '服藥的人改變飲茶習慣前，先問醫生或藥劑師'],
+};
+const key = KEY[d.slug];
+---
+<Base title={d.fullTitle ?? d.title} description={d.lede} nav="/safety/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span><a href={u('/safety/')}>飲茶安全</a><span>/</span>{d.title}</div>
+  <header class="page-head"><div class="wrap"><div>
+    <p class="kicker">飲茶安全 {String(d.order).padStart(2, '0')}</p>
+    <h1>{d.fullTitle ?? d.title}</h1>
+    <p class="lede">{d.lede}</p>
+    <p class="review-badge">編輯整理 · 待專業審閱</p>
+  </div>{key && <figure class="keyfig"><span class="num">{key[0]}{key[1] && <small>{key[1]}</small>}</span><figcaption>{key[2]}</figcaption></figure>}</div></header>
+  <div class="wrap">
+    {d.answer && <div class="answer-box single"><div class="ans"><h2>直答</h2><p>{d.answer}</p></div></div>}
+    {d.slug === 'caffeine' && <CaffeineCalc />}
+    <div class="article">
+      <nav class="toc" aria-label="本頁目錄"><p>本頁</p><ol>{h2.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol></nav>
+      <article>
+        <MobileToc items={h2} />
+        <div class="prose"><Content /></div>
+        {d.cautions.length > 0 && <div class="caution"><h3>重點</h3><ul>{d.cautions.map((c) => <li>{c}</li>)}</ul></div>}
+        <Sources sources={d.sources} reviewed={d.reviewed} />
+      </article>
+      <aside class="aside" aria-label="相關閱讀"><p class="kicker">安全</p><ul class="aside-list">{[prev, next].filter(Boolean).map((s) => <li><a href={u(`/safety/${s!.data.slug}/`)}>{s!.data.title}</a></li>)}<li><a href={u('/safety/')}>全部安全頁</a></li></ul></aside>
+    </div>
+  </div>
+  <nav class="wrap pn" aria-label="上下篇">
+    {prev ? <a href={u(`/safety/${prev.data.slug}/`)}><small>上一篇</small><span>{prev.data.title}</span></a> : <a href={u('/safety/')}><small>返回</small><span>飲茶安全</span></a>}
+    <a href={u(`/safety/${next.data.slug}/`)}><small>下一篇</small><span>{next.data.title}</span></a>
+  </nav>
+</Base>

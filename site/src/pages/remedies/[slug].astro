@@ -1,0 +1,48 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Sources from '../../components/Sources.astro';
+import { u } from '../../lib/site';
+export async function getStaticPaths() {
+  const all = (await getCollection('remedies')).sort((a, b) => a.data.order - b.data.order);
+  return all.map((entry, i) => ({ params: { slug: entry.data.slug }, props: { entry, prev: all[i - 1], next: all[i + 1] ?? all[0] } }));
+}
+const { entry, prev, next } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const img = `herb-${d.slug.split('-')[0]}`;
+---
+<Base title={d.title} description={d.lede} nav="/remedies/" image={`/img/${img}-l.webp`}>
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span><a href={u('/remedies/')}>茶方</a><span>/</span>{d.title}</div>
+  <header class="page-head media-head"><div class="wrap">
+    <div>
+      <p class="kicker">茶方 {String(d.order).padStart(2, '0')} · {d.nature}</p>
+      <h1>{d.title}</h1>
+      <p class="lede">{d.lede}</p>
+      <p class="review-badge">編輯整理 · 待專業審閱</p>
+      <dl class="spec">
+        <div><dt>茶底</dt><dd>{d.base}</dd></div>
+        <div><dt>配料</dt><dd>{d.herbs.map((h) => `${h.name}${h.amount ? ' ' + h.amount : ''}`).join('、')}</dd></div>
+        <div><dt>傳統茶性</dt><dd>{d.nature}</dd></div>
+        <div><dt>怎樣泡</dt><dd>{d.method}</dd></div>
+      </dl>
+    </div>
+    <figure class="media"><img src={u(`/img/${img}-l.webp`)} srcset={`${u(`/img/${img}-s.webp`)} 640w, ${u(`/img/${img}-l.webp`)} 1024w`} sizes="(max-width: 860px) 90vw, 40vw" width="1024" height="1024" alt={`${d.title}所用材料的本草圖`} /></figure>
+  </div></header>
+  <div class="wrap">
+    <div class="suit">
+      <div><h2>較合適</h2><ul>{d.suits.map((s) => <li>{s}</li>)}</ul></div>
+      <div class="no"><h2>宜避開</h2><ul>{d.avoid.map((s) => <li>{s}</li>)}</ul></div>
+    </div>
+    <div class="article solo">
+      <article>
+        <div class="prose"><Content /></div>
+        <Sources sources={d.sources} reviewed={d.reviewed} />
+      </article>
+    </div>
+  </div>
+  <nav class="wrap pn" aria-label="上下篇">
+    {prev ? <a href={u(`/remedies/${prev.data.slug}/`)}><small>上一方</small><span>{prev.data.title}</span></a> : <a href={u('/remedies/')}><small>返回</small><span>全部茶方</span></a>}
+    <a href={u(`/remedies/${next.data.slug}/`)}><small>下一方</small><span>{next.data.title}</span></a>
+  </nav>
+</Base>

@@ -1,0 +1,5 @@
+site/node_modules/
+site/dist/
+site/.astro/
+_work/
+_team_runs/

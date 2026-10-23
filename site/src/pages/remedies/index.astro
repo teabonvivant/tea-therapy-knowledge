@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { u } from '../../lib/site';
+const all = (await getCollection('remedies')).sort((a, b) => a.data.order - b.data.order);
+---
+<Base title="茶方" description="十款以藥食同源材料配茶的代茶飲：菊花普洱、陳皮白茶、生薑紅茶、桑葉茶等，寫明傳統用法、現代研究、泡法及不適合的人。" nav="/remedies/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span>茶方</div>
+  <header class="page-head"><div class="wrap"><div>
+    <p class="kicker">茶方 · 代茶飲</p>
+    <h1>茶底加一味</h1>
+    <p class="lede">配料只取藥食同源目錄內的材料，份量按日常飲用。每一方都是飲品，不是藥方；體質不合、正在服藥的人，先看「宜避開」。</p>
+  </div></div></header>
+  <section class="wrap" style="padding-bottom:120px">
+    <div class="cards">
+      {all.map((r) => (
+        <a class="card rv" href={u(`/remedies/${r.data.slug}/`)}>
+          <div class="ph"><img src={u(`/img/herb-${r.data.slug.split('-')[0]}-s.webp`)} width="640" height="640" loading="lazy" alt="" /></div>
+          <h3>{r.data.title}</h3>
+          <span class="tag">{r.data.base.split(/[（(]/)[0]} · <em>{r.data.nature.split(/[（(，]/)[0]}</em></span>
+          <p>{r.data.lede}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

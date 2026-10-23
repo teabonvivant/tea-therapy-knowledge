@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import { u } from '../lib/site';
+import data from '../data/constitutions.json';
+const d: any = data;
+const types: any[] = d.types ?? [];
+const trim = (x: string) => String(x ?? '').trim().replace(/[。；;]+$/, '');
+const fmt = (arr: any[] = []) => arr.map((x) => typeof x === 'string' ? trim(x) : `${x.name}${x.why || x.reason ? '：' + trim(x.why ?? x.reason) : ''}`).join('；');
+const qs = types.flatMap((t) => (t.questions ?? []).map((q: string) => ({ q, type: t.id })));
+// 交錯排列，免得同一型的問題連在一起
+const mixed = qs.map((x, i) => ({ ...x, k: (i % 3) * 100 + Math.floor(i / 3) })).sort((a, b) => a.k - b.k);
+---
+<Base title="九種體質與茶" description="依中華中醫藥學會《中醫體質分類與判定》的九種體質：平和、氣虛、陽虛、陰虛、痰濕、濕熱、血瘀、氣鬱、特稟，各自較合適的茶與宜少飲的茶，附簡易自我觀察。" nav="/constitution/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span>九種體質</div>
+  <header class="page-head"><div class="wrap"><div>
+    <p class="kicker">九種體質</p>
+    <h1>先看飲茶的人，<br />再看杯裏的茶</h1>
+    <p class="lede">怕冷的人飲一杯新綠茶，胃裏可能有點涼；燥熱口乾的人，一杯重焙岩茶又可能嫌太燥。中醫說「因人制宜」，茶也一樣。</p>
+  </div></div></header>
+  <section class="wrap" style="padding-bottom:64px">
+    <div class="quiz" data-quiz>
+      <div class="quiz-head"><h2 class="serif">簡易自我觀察</h2><p class="muted">按最近一年的大致情況回答。這不是診斷，只幫你在下面九型中找個起點。</p></div>
+      <div class="progress" aria-hidden="true"><i></i></div>
+      {mixed.map((x) => (
+        <div class="quiz-q" data-type={x.type}><span>{x.q}</span><span class="yn" role="group" aria-label={x.q}><button type="button" data-v="1" aria-pressed="false">是</button><button type="button" data-v="0" aria-pressed="false">否</button></span></div>
+      ))}
+      <div class="quiz-bar"><span class="muted" data-count></span><span class="quiz-nav"><button type="button" class="btn" data-prev>上一題</button><button type="button" class="btn btn-solid" data-calc disabled>看結果</button></span></div>
+      <div class="quiz-result" tabindex="-1" aria-live="polite"></div>
+    </div>
+  </section>
+  <section class="wrap" style="padding-bottom:120px">
+    <div class="types">
+      {types.map((t) => (
+        <article class="type" id={`t-${t.id}`}>
+          <h3>{t.name}</h3>
+          <p class="one">{t.oneLine}</p>
+          <p class="best"><span>較合適</span>{fmt(t.teas)}</p>
+          <details>
+            <summary>常見表現、宜少飲與可配材料</summary>
+            <dl>
+              <dt>常見表現</dt><dd>{(t.signs ?? []).map(trim).join('；')}</dd>
+              <dt>宜少飲</dt><dd>{fmt(t.avoid)}</dd>
+              {t.herbs?.length > 0 && <><dt>可配</dt><dd>{(t.herbs as any[]).map((x) => typeof x === 'string' ? trim(x) : `${x.name}${x.use || x.why || x.note ? '（' + trim(x.use ?? x.why ?? x.note) + '）' : ''}`).join('；')}</dd></>}
+            </dl>
+            {t.note && <p class="muted" style="font-size:13px;margin:14px 0 0">{t.note}</p>}
+          </details>
+        </article>
+      ))}
+    </div>
+    <p class="review-note">{d.disclaimer ?? '體質分類屬中醫理論，本頁只作一般參考。'}{d.source && <> 分類依據：{d.source.url ? <a href={d.source.url} rel="noopener" target="_blank">{d.source.text}</a> : d.source.text}。</>}</p>
+  </section>
+  <script type="application/json" id="type-data" set:html={JSON.stringify(types.map((t) => ({ id: t.id, name: t.name })))} />
+</Base>

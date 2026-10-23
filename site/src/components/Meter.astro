@@ -1,0 +1,6 @@
+---
+import { LEVEL } from '../lib/site';
+interface Props { level: number; label?: boolean }
+const { level, label = true } = Astro.props;
+---
+<span class="meter" role="img" aria-label={`證據濃度：${LEVEL[level]}（${level}／4）`}>{[1, 2, 3, 4].map((i) => <i class={i <= level ? 'on' : ''} />)}</span>{label && <span class="meter-label">{LEVEL[level]}</span>}

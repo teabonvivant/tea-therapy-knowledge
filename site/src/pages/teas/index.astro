@@ -1,0 +1,29 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Spectrum from '../../components/Spectrum.astro';
+import { u } from '../../lib/site';
+const ORDER = ['green', 'yellow', 'white', 'oolong', 'black', 'dark', 'puer'];
+const all = (await getCollection('teas')).sort((a, b) => ORDER.indexOf(a.data.slug) - ORDER.indexOf(b.data.slug));
+---
+<Base title="茶性光譜" description="綠茶、黃茶、白茶、烏龍、紅茶、黑茶、普洱：傳統茶性由寒涼到溫和，加工怎樣改變茶性，每種茶的主要成分與適合的人。" nav="/teas/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span>茶性</div>
+  <header class="page-head"><div class="wrap"><div>
+    <p class="kicker">茶性光譜</p>
+    <h1>同一片葉，<br />七種性情</h1>
+    <p class="lede">茶性寒溫是中醫的經驗之談，不是藥典上的定義。它大致跟着加工走：殺青保住青綠，發酵與焙火把茶帶向溫和，陳放又再磨圓一些。</p>
+  </div></div></header>
+  <section class="section dark" style="padding-block:clamp(56px,7vw,110px)"><div class="wrap"><Spectrum /></div></section>
+  <section class="section"><div class="wrap">
+    <div class="cards">
+      {all.map((t) => (
+        <a class="card rv" href={u(`/teas/${t.data.slug}/`)}>
+          <div class="ph"><img src={u(`/img/tea-${t.data.slug}-s.webp`)} width="640" height="640" loading="lazy" alt="" /></div>
+          <h3>{t.data.title}</h3>
+          <span class="tag"><em>{t.data.nature.split(/[（(；;，]/)[0]}</em> · {t.data.ferment.split(/[：:（(，]/)[0]}</span>
+          <p>{t.data.lede}</p>
+        </a>
+      ))}
+    </div>
+  </div></section>
+</Base>

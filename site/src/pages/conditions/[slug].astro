@@ -1,0 +1,66 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Meter from '../../components/Meter.astro';
+import Sources from '../../components/Sources.astro';
+import MobileToc from '../../components/MobileToc.astro';
+import { u } from '../../lib/site';
+export async function getStaticPaths() {
+  const all = (await getCollection('conditions')).sort((a, b) => a.data.order - b.data.order);
+  return all.map((entry, i) => ({ params: { slug: entry.data.slug }, props: { entry, prev: all[i - 1], next: all[i + 1] ?? all[0] } }));
+}
+const { entry, prev, next } = Astro.props;
+const d = entry.data;
+const { Content, headings } = await render(entry);
+const h2 = headings.filter((h) => h.depth === 2);
+const remedies = await getCollection('remedies');
+const findRemedy = (name: string) => remedies.find((r) => name.includes(r.data.title) || r.data.title.includes(name.replace(/茶$/, '')));
+const jsonld = { '@context': 'https://schema.org', '@type': 'Article', headline: d.fullTitle, description: d.lede, inLanguage: 'zh-Hant-HK', dateModified: d.reviewed?.toISOString().slice(0, 10) };
+---
+<Base title={d.fullTitle} description={`${d.lede}${d.answer}`.slice(0, 120)} nav="/conditions/" jsonld={jsonld}>
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span><a href={u('/conditions/')}>慢病專題</a><span>/</span>{d.title}</div>
+  <header class="page-head">
+    <div class="wrap">
+      <div>
+        <p class="kicker">{d.group} · 慢病專題 {String(d.order).padStart(2, '0')}</p>
+        <h1>{d.fullTitle}</h1>
+        <p class="lede">{d.lede}</p>
+        <p class="review-badge">編輯整理 · 待專業審閱</p>
+      </div>
+      {d.tcmName !== '—' && <div class="tcm-seal"><span class="lbl">中醫稱</span><span class="tcm-name">{d.tcmName.split(/[／/（(]/)[0]}</span></div>}
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="answer-box">
+      <div class="ans"><h2>直答</h2><p>{d.answer}</p></div>
+      <div class="ev"><h2>研究說到哪一步</h2>
+        <ul class="ev-list">{d.evidence.map((e) => <li><span class="c">{e.claim}{e.sourceRef?.length ? <a class="cite" href={`#src-${e.sourceRef[0]}`}>〔{e.sourceRef.join(',')}〕</a> : null}</span><span class="b">{e.basis}</span><span class="m"><Meter level={e.level} /></span></li>)}</ul>
+        <p style="margin:14px 0 0;font-size:13px"><a href={u('/method/')} class="muted">證據濃度怎樣評？</a></p>
+      </div>
+    </div>
+    <div class="article">
+      <nav class="toc" aria-label="本頁目錄"><p>本頁</p><ol>{h2.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol></nav>
+      <article>
+        <MobileToc items={h2} />
+        <div class="prose"><Content /></div>
+        {(d.teas.length > 0 || d.tcmTeas.length > 0) && (
+          <section aria-labelledby="pick">
+            <h2 id="pick" class="pick-h">可以怎樣選茶</h2>
+            {d.teas.length > 0 && <div class="pair">{d.teas.map((t) => <div><h3>{t.name}</h3><p>{t.why}</p></div>)}</div>}
+            {d.tcmTeas.length > 0 && <div class="pair">{d.tcmTeas.map((t) => { const r = findRemedy(t.name); return <div><h3>{r ? <a href={u(`/remedies/${r.data.slug}/`)}>{t.name}</a> : t.name}</h3>{t.mix && <p class="mix">{t.mix}</p>}{t.note && <p>{t.note}</p>}</div>; })}</div>}
+          </section>
+        )}
+        {d.cautions.length > 0 && <div class="caution"><h3>要小心</h3><ul>{d.cautions.map((c) => <li>{c}</li>)}</ul></div>}
+        <Sources sources={d.sources} reviewed={d.reviewed} />
+      </article>
+      <aside class="aside" aria-label="相關閱讀">
+        <p class="kicker">相關閱讀</p>
+        <ul class="aside-list"><li><a href={u('/safety/medicines/')}>茶與藥物</a></li><li><a href={u('/safety/caffeine/')}>咖啡因份量</a></li><li><a href={u('/constitution/')}>九種體質</a></li><li><a href={u('/method/')}>怎樣讀研究</a></li></ul>
+      </aside>
+    </div>
+  </div>
+  <nav class="wrap pn" aria-label="上下篇">
+    {prev ? <a href={u(`/conditions/${prev.data.slug}/`)}><small>上一題</small><span>{prev.data.title}</span></a> : <a href={u('/conditions/')}><small>返回</small><span>全部專題</span></a>}
+    <a href={u(`/conditions/${next.data.slug}/`)}><small>下一題</small><span>{next.data.title}</span></a>
+  </nav>
+</Base>

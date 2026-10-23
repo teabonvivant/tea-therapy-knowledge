@@ -1,0 +1,46 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Sources from '../../components/Sources.astro';
+import MobileToc from '../../components/MobileToc.astro';
+import { u } from '../../lib/site';
+const ORDER = ['green', 'yellow', 'white', 'oolong', 'black', 'dark', 'puer'];
+export async function getStaticPaths() {
+  const ORDER = ['green', 'yellow', 'white', 'oolong', 'black', 'dark', 'puer'];
+  const all = (await getCollection('teas')).sort((a, b) => ORDER.indexOf(a.data.slug) - ORDER.indexOf(b.data.slug));
+  return all.map((entry, i) => ({ params: { slug: entry.data.slug }, props: { entry, prev: all[i - 1], next: all[i + 1] ?? all[0], all: all.map((t) => ({ slug: t.data.slug, title: t.data.title, color: t.data.color })) } }));
+}
+const { entry, prev, next, all } = Astro.props;
+const d = entry.data;
+const { Content, headings } = await render(entry);
+const h2 = headings.filter((h) => h.depth === 2);
+const pos = ORDER.indexOf(d.slug);
+---
+<Base title={d.title} description={d.lede} nav="/teas/" image={`/img/tea-${d.slug}-l.webp`}>
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span><a href={u('/teas/')}>茶性</a><span>/</span>{d.title}</div>
+  <header class="page-head media-head"><div class="wrap">
+    <div>
+      <p class="kicker">茶性 · {d.nature.split(/[（(；;]/)[0]}</p>
+      <h1>{d.title}</h1>
+      <p class="lede">{d.lede}</p>
+      <dl class="spec">
+        <div><dt>傳統茶性</dt><dd>{d.nature}</dd></div>
+        <div><dt>加工</dt><dd>{d.ferment}</dd></div>
+        <div><dt>茶湯</dt><dd><span class="swatch big" style={`--c:${d.color}`} role="img" aria-label="典型茶湯色"></span></dd></div>
+      </dl>
+      <ol class="mini-band" aria-label="茶性光譜位置">{all.map((t: any, i: number) => <li style={`--c:${t.color}`} class={i === pos ? 'here' : ''}><a href={u(`/teas/${t.slug}/`)} aria-current={i === pos ? 'page' : undefined}>{t.title.replace(/（.*）/, '')}</a></li>)}</ol>
+    </div>
+    <figure class="media"><img src={u(`/img/tea-${d.slug}-l.webp`)} srcset={`${u(`/img/tea-${d.slug}-s.webp`)} 640w, ${u(`/img/tea-${d.slug}-l.webp`)} 1024w`} sizes="(max-width: 860px) 90vw, 40vw" width="1024" height="1024" alt={`${d.title}乾茶與茶湯的本草圖`} /></figure>
+  </div></header>
+  <div class="wrap">
+    <div class="article">
+      <nav class="toc" aria-label="本頁目錄"><p>本頁</p><ol>{h2.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol></nav>
+      <article><MobileToc items={h2} /><div class="prose"><Content /></div><Sources sources={d.sources} reviewed={d.reviewed} /></article>
+      <aside class="aside"></aside>
+    </div>
+  </div>
+  <nav class="wrap pn" aria-label="上下篇">
+    {prev ? <a href={u(`/teas/${prev.data.slug}/`)}><small>較寒涼</small><span>{prev.data.title}</span></a> : <a href={u('/teas/')}><small>返回</small><span>茶性光譜</span></a>}
+    <a href={u(`/teas/${next.data.slug}/`)}><small>{next.data.slug === 'green' ? '回到起點' : '較溫和'}</small><span>{next.data.title}</span></a>
+  </nav>
+</Base>

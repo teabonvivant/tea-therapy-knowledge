@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import { u } from '../lib/site';
+import classics from '../data/classics.json';
+const items: any[] = (Array.isArray(classics) ? classics : (classics as any).items ?? []).sort((a: any, b: any) => a.year - b.year);
+---
+<Base title="茶療源流" description="由唐代《新修本草》、陸羽《茶經》到明代《本草綱目》、清代《本草綱目拾遺》，再到今日的大型世代研究：一千多年來人們怎樣談茶與身體。" nav="/classics/">
+  <div class="wrap crumbs"><a href={u('/')}>首頁</a><span>/</span>茶療源流</div>
+  <header class="page-head"><div class="wrap"><div>
+    <p class="kicker">茶療源流</p>
+    <h1>古人怎樣寫茶，<br />今人怎樣量茶</h1>
+    <p class="lede">古籍原文逐句核對過電子文本；出處存疑的流傳語，會直接寫明。</p>
+  </div></div></header>
+  <section class="wrap" style="padding:24px 0 120px">
+    <ol class="timeline">
+      {items.map((t) => (
+        <li class="rv"><span class="yr num">{t.year}<small>{t.era}</small></span>
+          <div><h3>{t.book}</h3><p class="by">{t.author}</p>{t.quote && <blockquote>{t.quote}</blockquote>}<p>{t.plain}</p>{t.note && <p class="note">{t.note}{t.url && <> <a href={t.url} rel="noopener" target="_blank">原文</a></>}</p>}</div>
+        </li>
+      ))}
+    </ol>
+  </section>
+</Base>
