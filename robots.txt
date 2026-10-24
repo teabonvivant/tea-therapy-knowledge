@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://teabonvivant.github.io/tea-therapy-knowledge/sitemap.xml

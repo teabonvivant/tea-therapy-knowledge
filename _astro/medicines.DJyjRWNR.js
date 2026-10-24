@@ -1,0 +1,1 @@
+var e=e=>String(e??``).toLowerCase().normalize(`NFKC`).replace(/[\s\-_/・，,、（）()]+/g,``),t=(t,n)=>{let r=String(n??``).trim().split(/\s+/).map(e).filter(Boolean);return r.length>0&&r.every(e=>t.some(t=>t.includes(e)))};export{t};

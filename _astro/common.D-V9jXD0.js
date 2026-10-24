@@ -1,0 +1,1 @@
+var e=1440,t=t=>{let n=(Math.round(t)%e+e)%e;return`${String(Math.floor(n/60)).padStart(2,`0`)}:${String(n%60).padStart(2,`0`)}`},n=(t,n)=>((n-t)%e+e)%e,r=e=>e<10?(Math.round(e*10)/10).toFixed(1).replace(/\.0$/,``):String(Math.round(e)),i=e=>String(e).replace(/[&<>"]/g,e=>({"&":`&amp;`,"<":`&lt;`,">":`&gt;`,'"':`&quot;`})[e]);export{n as a,r as i,i as n,t as r,e as t};
